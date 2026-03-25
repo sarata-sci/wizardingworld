@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Wizarding World of Punnett Squares</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#C9A84C; --gold-light:#F0D78C; --gold-dark:#8B6914;
+    --parchment:#FDF6E3; --parchment-dark:#F0E6C8;
+    --ink:#2C1810; --ink-light:#5C3D2E;
+    --dom:#1A3A6B; --rec:#8B1A1A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  @media print{body{background:white;padding:0;}.no-print{display:none!important;}.page{box-shadow:none;border:1px solid #ccc;max-width:100%;}.header,#final-section{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+  body{font-family:'Lato',sans-serif;background:#1a0e08;background-image:radial-gradient(ellipse at 20% 20%,#2d1a0e 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,#0d1a0e 0%,transparent 60%);min-height:100vh;padding:2rem 1rem;color:var(--ink);}
+  .page{max-width:860px;margin:0 auto;background:var(--parchment);border-radius:4px;box-shadow:0 8px 60px rgba(0,0,0,0.6);border:1px solid var(--gold-dark);overflow:hidden;}
+  .header{background:linear-gradient(135deg,#1a0a04 0%,#2C1810 50%,#0d1a0a 100%);padding:2.5rem 2rem 2rem;text-align:center;border-bottom:3px solid var(--gold);}
+  .crest{font-size:28px;color:var(--gold);letter-spacing:8px;margin-bottom:0.5rem;}
+  h1{font-family:'Cinzel',serif;color:var(--gold);font-size:clamp(17px,4vw,27px);font-weight:600;letter-spacing:2px;line-height:1.3;}
+  .header-sub{font-family:'Cinzel',serif;color:var(--gold-light);font-size:11px;letter-spacing:3px;margin-top:0.5rem;opacity:0.8;}
+  .student-bar{background:var(--parchment-dark);border-bottom:2px solid var(--gold-dark);padding:1rem 2rem;display:grid;grid-template-columns:2fr 1fr 1fr;gap:1.5rem;}
+  .student-field label{display:block;font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--ink-light);margin-bottom:4px;text-transform:uppercase;}
+  .student-field input{width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--gold-dark);padding:4px 2px;font-family:'Lato',sans-serif;font-size:15px;color:var(--ink);outline:none;}
+  .student-field input:focus{border-color:var(--gold);}
+  .content{padding:1.5rem 2rem 2rem;}
+  .section-card{background:white;border:1px solid #E8D9B5;border-radius:6px;margin-bottom:1.25rem;overflow:hidden;transition:box-shadow 0.2s;}
+  .section-card:not(.locked):hover{box-shadow:0 2px 16px rgba(44,24,16,0.12);}
+  .section-card.locked{opacity:0.38;pointer-events:none;}
+  .section-head{background:linear-gradient(90deg,#2C1810,#3d2010);padding:0.75rem 1.25rem;display:flex;align-items:center;gap:12px;}
+  .section-num{width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--ink);font-family:'Cinzel',serif;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .section-title{font-family:'Cinzel',serif;color:var(--gold-light);font-size:14px;letter-spacing:1px;}
+  .section-body{padding:1.25rem;}
+  .key-box{background:var(--parchment);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:8px 12px;margin-bottom:1rem;font-size:13px;color:var(--ink-light);line-height:1.8;}
+  .key-box .dom{color:var(--dom);font-weight:700;font-size:15px;}
+  .key-box .rec{color:var(--rec);font-weight:400;font-style:italic;font-size:15px;}
+  .instruction{font-size:13px;color:var(--ink-light);margin-bottom:1rem;line-height:1.6;}
+  .instruction strong{color:var(--ink);}
+  .flip-btn{background:var(--ink);color:var(--gold);border:1.5px solid var(--gold-dark);border-radius:4px;padding:10px 22px;font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .flip-btn:hover{background:#3d2010;border-color:var(--gold);}
+  .flip-btn:active{transform:scale(0.97);}
+  .coin-row-area{display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:1rem;}
+  .coin-group-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-light);margin-bottom:6px;}
+  .coins{display:flex;gap:8px;}
+  .coin{width:50px;height:50px;border-radius:50%;border:2px solid #C8A96A;background:var(--parchment-dark);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:17px;font-weight:700;color:var(--ink-light);transition:all 0.35s cubic-bezier(.34,1.56,.64,1);}
+  .coin.heads{background:linear-gradient(135deg,#F0D78C,#C9A84C);border-color:#8B6914;color:var(--dom);}
+  .coin.tails{background:linear-gradient(135deg,#e8d8d8,#c8a8a8);border-color:#8B3A3A;color:var(--rec);}
+  /* PUNNETT */
+  .punnett-area{display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;margin:1rem 0;}
+  .punnett-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:1px;color:var(--ink-light);margin-bottom:6px;text-transform:uppercase;}
+  .punnett-outer{display:grid;grid-template-columns:44px 76px 76px;grid-template-rows:44px 76px 76px;width:196px;border:2px solid var(--ink);border-radius:4px;overflow:hidden;flex-shrink:0;}
+  .p-corner{background:var(--parchment-dark);}
+  .p-head{background:#2C1810;display:flex;align-items:center;justify-content:center;border-left:1px solid #4a2a10;font-size:20px;}
+  .p-side{background:#2C1810;display:flex;align-items:center;justify-content:center;border-top:1px solid #4a2a10;font-size:20px;}
+  /* allele styling inside grid */
+  .A-dom{font-family:'Cinzel',serif;font-weight:700;font-size:20px;color:#A8C4E8;letter-spacing:1px;}
+  .A-rec{font-family:'Cinzel',serif;font-weight:400;font-style:italic;font-size:18px;color:#E8A8A8;letter-spacing:0;}
+  .p-cell{display:flex;align-items:center;justify-content:center;border-left:1.5px solid #D4C4A0;border-top:1.5px solid #D4C4A0;background:white;min-height:76px;font-family:'Cinzel',serif;font-size:16px;font-weight:600;color:var(--ink-light);}
+  .p-cell.correct{background:#EAF5EA;}
+  .p-cell.wrong{background:#FBF0F0;animation:shake 0.3s;}
+  /* cell answer display */
+  .cell-dom{font-weight:700;font-size:18px;color:var(--dom);}
+  .cell-rec{font-weight:400;font-style:italic;font-size:18px;color:var(--rec);}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  /* CHOICE ROWS */
+  .cell-rows{display:flex;flex-direction:column;gap:10px;justify-content:center;}
+  .cell-row{display:flex;align-items:center;gap:8px;}
+  .cell-row-label{font-family:'Cinzel',serif;font-size:12px;color:var(--ink-light);min-width:34px;text-align:right;}
+  .cell-choices{display:flex;gap:6px;flex-wrap:wrap;}
+  .cell-opt{padding:7px 16px;border-radius:4px;border:1.5px solid #D4C4A0;cursor:pointer;font-family:'Cinzel',serif;font-size:15px;font-weight:600;color:var(--ink);background:var(--parchment);transition:all 0.15s;line-height:1.2;}
+  .cell-opt:hover:not(:disabled){background:var(--parchment-dark);border-color:var(--gold-dark);}
+  .cell-opt.wrong-flash{background:#FBF0F0;border-color:#740001;color:#740001;}
+  .cell-opt.right-done{background:#EAF5EA;border-color:#1A472A;color:#1A472A;cursor:default;}
+  .cell-opt:disabled{opacity:0.45;cursor:default;}
+  .feedback-msg{font-size:13px;font-weight:700;margin-top:0.5rem;}
+  .feedback-msg.ok{color:#1A472A;}
+  .feedback-msg.err{color:#740001;}
+  .result-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:4px;font-family:'Cinzel',serif;font-size:13px;font-weight:600;margin-top:0.75rem;letter-spacing:0.5px;}
+  .badge-wizard{background:#EAF5EA;color:#1A472A;border:1.5px solid #1A472A;}
+  .badge-muggle{background:#FBF0F0;color:#740001;border:1.5px solid #740001;}
+  .badge-gold{background:#FDF6E3;color:var(--gold-dark);border:1.5px solid var(--gold);}
+  .badge-neutral{background:var(--parchment);color:var(--ink);border:1.5px solid var(--gold-dark);}
+  .badge-gryffindor{background:#FFF4E6;color:#740001;border:1.5px solid #740001;}
+  .badge-slytherin{background:#E8F5E9;color:#1A472A;border:1.5px solid #1A472A;}
+  .badge-ravenclaw{background:#E8EAF6;color:#0E1A40;border:1.5px solid #0E1A40;}
+  .badge-hufflepuff{background:#FFFDE7;color:#5a4000;border:1.5px solid #ECB939;}
+  .prob-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:0.5rem;}
+  .prob-chip{font-size:12px;padding:3px 10px;border-radius:20px;border:0.5px solid #D4C4A0;color:var(--ink-light);font-family:'Cinzel',serif;}
+  .unlock-hint{font-size:12px;color:var(--ink-light);margin-top:0.75rem;font-style:italic;}
+  /* WIZARD BUILDER */
+  .choice-section{margin:0.85rem 0;}
+  .choice-label{font-family:'Cinzel',serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-light);margin-bottom:8px;}
+  .choice-grid{display:flex;gap:8px;flex-wrap:wrap;}
+  .choice-chip{padding:7px 16px;border-radius:20px;border:1.5px solid #D4C4A0;font-size:13px;cursor:pointer;background:var(--parchment);color:var(--ink);transition:all 0.18s;font-family:'Lato',sans-serif;}
+  .choice-chip:hover{border-color:var(--gold-dark);background:var(--parchment-dark);}
+  .choice-chip.selected{background:var(--ink);color:var(--gold);border-color:var(--gold-dark);}
+  /* house-colored robe chips */
+  .robe-gryf{border-color:#740001!important;color:#740001!important;}
+  .robe-gryf.selected{background:#740001!important;color:#FFF4E6!important;}
+  .robe-slyt{border-color:#1A472A!important;color:#1A472A!important;}
+  .robe-slyt.selected{background:#1A472A!important;color:#E8F5E9!important;}
+  .robe-rave{border-color:#0E1A40!important;color:#0E1A40!important;}
+  .robe-rave.selected{background:#0E1A40!important;color:#E8EAF6!important;}
+  .robe-huff{border-color:#5a4000!important;color:#5a4000!important;}
+  .robe-huff.selected{background:#ECB939!important;color:#3a2800!important;}
+  /* FINAL */
+  #final-section{background:linear-gradient(135deg,#1a0a04 0%,#2C1810 50%,#0d1a0a 100%);margin:1.5rem -2rem -2rem;padding:2rem;border-top:3px solid var(--gold);display:none;}
+  .final-title{font-family:'Cinzel',serif;color:var(--gold);font-size:20px;letter-spacing:3px;text-align:center;margin-bottom:1.5rem;}
+  .profile-card{background:var(--parchment);border:2px solid var(--gold);border-radius:6px;padding:1.5rem;}
+  .profile-layout{display:grid;grid-template-columns:1fr 200px;gap:1.5rem;align-items:start;}
+  .profile-name-area{text-align:center;border-bottom:1px solid var(--gold-dark);padding-bottom:1rem;margin-bottom:1rem;}
+  .profile-wizard-name{font-family:'Cinzel',serif;font-size:22px;font-weight:600;color:var(--ink);}
+  .profile-meta{font-size:13px;color:var(--ink-light);margin-top:4px;}
+  .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:1rem;}
+  .profile-item-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--ink-light);text-transform:uppercase;margin-bottom:3px;}
+  .profile-item-val{font-family:'Cinzel',serif;font-size:14px;font-weight:600;color:var(--ink);min-height:20px;}
+  .house-badge-inline{display:inline-block;padding:3px 12px;border-radius:20px;font-family:'Cinzel',serif;font-size:14px;font-weight:600;}
+  .wand-line{border-top:1px solid var(--gold-dark);padding-top:0.75rem;text-align:center;}
+  /* WIZARD PORTRAIT */
+  .wizard-portrait-box{border:2px solid var(--gold-dark);border-radius:6px;overflow:hidden;background:var(--parchment-dark);min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .wizard-portrait-box img{width:100%;display:block;border-radius:4px;}
+  .portrait-placeholder{padding:1rem;text-align:center;font-size:12px;color:var(--ink-light);font-style:italic;}
+  .portrait-loading{padding:1rem;text-align:center;}
+  .portrait-loading .spinner{width:28px;height:28px;border:3px solid var(--gold-dark);border-top-color:var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 8px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .portrait-loading p{font-family:'Cinzel',serif;font-size:11px;color:var(--gold-dark);letter-spacing:1px;}
+  .screenshot-note{background:rgba(201,168,76,0.12);border:1.5px solid var(--gold-dark);border-radius:6px;padding:1rem 1.25rem;margin-top:1.25rem;text-align:center;}
+  .screenshot-note p{font-family:'Cinzel',serif;color:var(--gold-light);font-size:13px;line-height:1.9;letter-spacing:0.5px;}
+  .screenshot-note strong{color:var(--gold);}
+  .print-btn{display:block;margin:1.25rem auto 0;background:transparent;border:1.5px solid var(--gold);color:var(--gold);border-radius:4px;padding:10px 28px;font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+  .print-btn:hover{background:rgba(201,168,76,0.1);}
+  .reset-btn{display:block;margin:0.75rem auto 0;background:transparent;border:1px solid rgba(201,168,76,0.3);color:rgba(201,168,76,0.5);border-radius:4px;padding:8px 20px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+  .reset-btn:hover{color:var(--gold);border-color:var(--gold);}
+  @media(max-width:600px){.student-bar{grid-template-columns:1fr;gap:0.75rem;}.profile-grid{grid-template-columns:1fr;}.profile-layout{grid-template-columns:1fr;}.content{padding:1rem;}#final-section{margin:1rem -1rem -1rem;padding:1.5rem 1rem;}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="crest">✦ ✦ ✦</div>
+    <h1>The Wizarding World of Punnett Squares</h1>
+    <p class="header-sub">A Genetics Discovery Activity</p>
+  </div>
+  <div class="student-bar">
+    <div class="student-field"><label>Name</label><input type="text" id="student-name" placeholder="Your name"/></div>
+    <div class="student-field"><label>Period</label><input type="text" id="student-period" placeholder="Period"/></div>
+    <div class="student-field"><label>Date</label><input type="text" id="student-date" placeholder="Date"/></div>
+  </div>
+  <div class="content">
+
+    <!-- S1 -->
+    <div class="section-card" id="s1">
+      <div class="section-head"><div class="section-num">1</div><div class="section-title">Your Wizarding Probability</div></div>
+      <div class="section-body">
+        <div class="key-box">
+          <span class="dom">W</span> = Wizard ability (dominant — bold blue) &nbsp;·&nbsp; <span class="rec">w</span> = Muggle (recessive — italic red)<br>
+          Heads = Dominant &nbsp;·&nbsp; Tails = Recessive
+        </div>
+        <p class="instruction"><strong>Step 1:</strong> Click "Flip Coins" to reveal Mom's and Dad's alleles.<br><strong>Step 2:</strong> Click the correct genotype for each numbered cell in the Punnett square.</p>
+        <div class="coin-row-area">
+          <div><div class="coin-group-label">Mom</div><div class="coins"><div class="coin" id="s1m1">?</div><div class="coin" id="s1m2">?</div></div></div>
+          <div><div class="coin-group-label">Dad</div><div class="coins"><div class="coin" id="s1d1">?</div><div class="coin" id="s1d2">?</div></div></div>
+          <div style="align-self:flex-end;"><button class="flip-btn no-print" onclick="flipSection('s1','W',['s1m1','s1m2'],['s1d1','s1d2'])">Flip Coins</button></div>
+        </div>
+        <div id="s1-punnett" style="display:none;">
+          <div class="punnett-area">
+            <div>
+              <div class="punnett-label">Punnett Square:</div>
+              <div class="punnett-outer">
+                <div class="p-corner"></div>
+                <div class="p-head" id="s1ph1"></div><div class="p-head" id="s1ph2"></div>
+                <div class="p-side" id="s1ps1"></div>
+                <div class="p-cell" id="s1c0">?</div><div class="p-cell" id="s1c1">?</div>
+                <div class="p-side" id="s1ps2"></div>
+                <div class="p-cell" id="s1c2">?</div><div class="p-cell" id="s1c3">?</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:210px;">
+              <div class="punnett-label" style="margin-bottom:10px;">Choose each cell's genotype:</div>
+              <div class="cell-rows" id="s1-choices"></div>
+              <div id="s1-fb" style="margin-top:10px;"></div>
+              <div id="s1-result" style="display:none;margin-top:8px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S2 -->
+    <div class="section-card locked" id="s2">
+      <div class="section-head"><div class="section-num">2</div><div class="section-title">Your Children's Wizarding Probability</div></div>
+      <div class="section-body">
+        <div class="key-box">Using <em>your</em> genotype from Part 1, flip coins for your partner and solve for your children's odds.</div>
+        <p class="instruction"><strong>Step 1:</strong> Flip for your partner — your own alleles are shown automatically.<br><strong>Step 2:</strong> Fill in the Punnett square.</p>
+        <div class="coin-row-area">
+          <div><div class="coin-group-label">You</div><div class="coins"><div class="coin" id="s2y1">?</div><div class="coin" id="s2y2">?</div></div></div>
+          <div><div class="coin-group-label">Partner</div><div class="coins"><div class="coin" id="s2p1">?</div><div class="coin" id="s2p2">?</div></div></div>
+          <div style="align-self:flex-end;"><button class="flip-btn no-print" onclick="flipS2()">Flip Coins</button></div>
+        </div>
+        <div id="s2-punnett" style="display:none;">
+          <div class="punnett-area">
+            <div><div class="punnett-label">Punnett Square:</div>
+              <div class="punnett-outer">
+                <div class="p-corner"></div>
+                <div class="p-head" id="s2ph1"></div><div class="p-head" id="s2ph2"></div>
+                <div class="p-side" id="s2ps1"></div>
+                <div class="p-cell" id="s2c0">?</div><div class="p-cell" id="s2c1">?</div>
+                <div class="p-side" id="s2ps2"></div>
+                <div class="p-cell" id="s2c2">?</div><div class="p-cell" id="s2c3">?</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:210px;"><div class="punnett-label" style="margin-bottom:10px;">Choose each cell's genotype:</div><div class="cell-rows" id="s2-choices"></div><div id="s2-fb" style="margin-top:10px;"></div><div id="s2-result" style="display:none;margin-top:8px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3 -->
+    <div class="section-card locked" id="s3">
+      <div class="section-head"><div class="section-num">3</div><div class="section-title">Children's House Probability</div></div>
+      <div class="section-body">
+        <div class="key-box">
+          <span class="dom">H</span> = House gene (dominant) &nbsp;·&nbsp; <span class="rec">h</span> = recessive &nbsp;·&nbsp;
+          <strong>HH</strong> = Gryffindor &nbsp;·&nbsp; <strong>Hh</strong> = Ravenclaw / Hufflepuff &nbsp;·&nbsp; <strong>hh</strong> = Slytherin
+        </div>
+        <p class="instruction">Flip for you and your partner, then fill in your children's possible houses.</p>
+        <div class="coin-row-area">
+          <div><div class="coin-group-label">You</div><div class="coins"><div class="coin" id="s3y1">?</div><div class="coin" id="s3y2">?</div></div></div>
+          <div><div class="coin-group-label">Partner</div><div class="coins"><div class="coin" id="s3p1">?</div><div class="coin" id="s3p2">?</div></div></div>
+          <div style="align-self:flex-end;"><button class="flip-btn no-print" onclick="flipSection('s3','H',['s3y1','s3y2'],['s3p1','s3p2'])">Flip Coins</button></div>
+        </div>
+        <div id="s3-punnett" style="display:none;">
+          <div class="punnett-area">
+            <div><div class="punnett-label">Punnett Square:</div>
+              <div class="punnett-outer">
+                <div class="p-corner"></div>
+                <div class="p-head" id="s3ph1"></div><div class="p-head" id="s3ph2"></div>
+                <div class="p-side" id="s3ps1"></div>
+                <div class="p-cell" id="s3c0">?</div><div class="p-cell" id="s3c1">?</div>
+                <div class="p-side" id="s3ps2"></div>
+                <div class="p-cell" id="s3c2">?</div><div class="p-cell" id="s3c3">?</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:210px;"><div class="punnett-label" style="margin-bottom:10px;">Choose each cell's genotype:</div><div class="cell-rows" id="s3-choices"></div><div id="s3-fb" style="margin-top:10px;"></div><div id="s3-result" style="display:none;margin-top:8px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 -->
+    <div class="section-card locked" id="s4">
+      <div class="section-head"><div class="section-num">4</div><div class="section-title">Mail Animal Type</div></div>
+      <div class="section-body">
+        <div class="key-box"><span class="dom">O</span> = White Owl (dominant) &nbsp;·&nbsp; <span class="rec">o</span> = Gray Owl (recessive) &nbsp;·&nbsp; <strong>OO or Oo</strong> = White Owl &nbsp;·&nbsp; <strong>oo</strong> = Gray Owl</div>
+        <p class="instruction">Flip 4 coins (2 for you, 2 for your partner), then fill in your Punnett square.</p>
+        <div class="coin-row-area">
+          <div><div class="coin-group-label">You</div><div class="coins"><div class="coin" id="s4y1">?</div><div class="coin" id="s4y2">?</div></div></div>
+          <div><div class="coin-group-label">Partner</div><div class="coins"><div class="coin" id="s4p1">?</div><div class="coin" id="s4p2">?</div></div></div>
+          <div style="align-self:flex-end;"><button class="flip-btn no-print" onclick="flipSection('s4','O',['s4y1','s4y2'],['s4p1','s4p2'])">Flip Coins</button></div>
+        </div>
+        <div id="s4-punnett" style="display:none;">
+          <div class="punnett-area">
+            <div><div class="punnett-label">Punnett Square:</div>
+              <div class="punnett-outer">
+                <div class="p-corner"></div>
+                <div class="p-head" id="s4ph1"></div><div class="p-head" id="s4ph2"></div>
+                <div class="p-side" id="s4ps1"></div>
+                <div class="p-cell" id="s4c0">?</div><div class="p-cell" id="s4c1">?</div>
+                <div class="p-side" id="s4ps2"></div>
+                <div class="p-cell" id="s4c2">?</div><div class="p-cell" id="s4c3">?</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:210px;"><div class="punnett-label" style="margin-bottom:10px;">Choose each cell's genotype:</div><div class="cell-rows" id="s4-choices"></div><div id="s4-fb" style="margin-top:10px;"></div><div id="s4-result" style="display:none;margin-top:8px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5 -->
+    <div class="section-card locked" id="s5">
+      <div class="section-head"><div class="section-num">5</div><div class="section-title">Wand Wood Type</div></div>
+      <div class="section-body">
+        <div class="key-box"><span class="dom">M</span> = dominant wood gene &nbsp;·&nbsp; <span class="rec">m</span> = recessive &nbsp;·&nbsp; <strong>MM</strong> = Ash &nbsp;·&nbsp; <strong>Mm</strong> = Elm &nbsp;·&nbsp; <strong>mm</strong> = Cypress</div>
+        <p class="instruction">Flip and fill in the square to discover your wand wood.</p>
+        <div class="coin-row-area">
+          <div><div class="coin-group-label">You</div><div class="coins"><div class="coin" id="s5y1">?</div><div class="coin" id="s5y2">?</div></div></div>
+          <div><div class="coin-group-label">Partner</div><div class="coins"><div class="coin" id="s5p1">?</div><div class="coin" id="s5p2">?</div></div></div>
+          <div style="align-self:flex-end;"><button class="flip-btn no-print" onclick="flipSection('s5','M',['s5y1','s5y2'],['s5p1','s5p2'])">Flip Coins</button></div>
+        </div>
+        <div id="s5-punnett" style="display:none;">
+          <div class="punnett-area">
+            <div><div class="punnett-label">Punnett Square:</div>
+              <div class="punnett-outer">
+                <div class="p-corner"></div>
+                <div class="p-head" id="s5ph1"></div><div class="p-head" id="s5ph2"></div>
+                <div class="p-side" id="s5ps1"></div>
+                <div class="p-cell" id="s5c0">?</div><div class="p-cell" id="s5c1">?</div>
+                <div class="p-side" id="s5ps2"></div>
+                <div class="p-cell" id="s5c2">?</div><div class="p-cell" id="s5c3">?</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:210px;"><div class="punnett-label" style="margin-bottom:10px;">Choose each cell's genotype:</div><div class="cell-rows" id="s5-choices"></div><div id="s5-fb" style="margin-top:10px;"></div><div id="s5-result" style="display:none;margin-top:8px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S6 -->
+    <div class="section-card locked" id="s6">
+      <div class="section-head"><div class="section-num">6</div><div class="section-title">Wand Core Type</div></div>
+      <div class="section-body">
+        <div class="key-box"><span class="dom">C</span> = dominant core gene &nbsp;·&nbsp; <span class="rec">c</span> = recessive &nbsp;·&nbsp; <strong>CC</strong> = Unicorn Tail &nbsp;·&nbsp; <strong>Cc</strong> = Dragon Heartstring &nbsp;·&nbsp; <strong>cc</strong> = Phoenix Feather</div>
+        <p class="instruction">Last Punnett square! Flip and fill it in to reveal your wand core.</p>
+        <div class="coin-row-area">
+          <div><div class="coin-group-label">You</div><div class="coins"><div class="coin" id="s6y1">?</div><div class="coin" id="s6y2">?</div></div></div>
+          <div><div class="coin-group-label">Partner</div><div class="coins"><div class="coin" id="s6p1">?</div><div class="coin" id="s6p2">?</div></div></div>
+          <div style="align-self:flex-end;"><button class="flip-btn no-print" onclick="flipSection('s6','C',['s6y1','s6y2'],['s6p1','s6p2'])">Flip Coins</button></div>
+        </div>
+        <div id="s6-punnett" style="display:none;">
+          <div class="punnett-area">
+            <div><div class="punnett-label">Punnett Square:</div>
+              <div class="punnett-outer">
+                <div class="p-corner"></div>
+                <div class="p-head" id="s6ph1"></div><div class="p-head" id="s6ph2"></div>
+                <div class="p-side" id="s6ps1"></div>
+                <div class="p-cell" id="s6c0">?</div><div class="p-cell" id="s6c1">?</div>
+                <div class="p-side" id="s6ps2"></div>
+                <div class="p-cell" id="s6c2">?</div><div class="p-cell" id="s6c3">?</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:210px;"><div class="punnett-label" style="margin-bottom:10px;">Choose each cell's genotype:</div><div class="cell-rows" id="s6-choices"></div><div id="s6-fb" style="margin-top:10px;"></div><div id="s6-result" style="display:none;margin-top:8px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S7: BUILD YOUR WIZARD -->
+    <div class="section-card locked" id="s7">
+      <div class="section-head"><div class="section-num">7</div><div class="section-title">Build Your Wizard</div></div>
+      <div class="section-body">
+        <p class="instruction">You've solved all the genetics! Now personalize your wizard — then click "Reveal My Profile" to generate your wizard portrait and complete card.</p>
+
+        <div class="choice-section">
+          <div class="choice-label">Wizard Name</div>
+          <input type="text" id="wizard-name-input" placeholder="Type your wizard name..." style="border:1.5px solid #D4C4A0;border-radius:20px;padding:7px 16px;font-size:13px;font-family:'Lato',sans-serif;color:var(--ink);background:var(--parchment);outline:none;width:240px;"/>
+        </div>
+
+        <div class="choice-section">
+          <div class="choice-label">Gender</div>
+          <div class="choice-grid" data-group="gender">
+            <div class="choice-chip" onclick="pick(this,'gender')">Male</div>
+            <div class="choice-chip" onclick="pick(this,'gender')">Female</div>
+            <div class="choice-chip" onclick="pick(this,'gender')">Non-binary</div>
+          </div>
+        </div>
+
+        <div class="choice-section">
+          <div class="choice-label">Robe Color — matches your Hogwarts house!</div>
+          <div class="choice-grid" data-group="robe">
+            <div class="choice-chip robe-gryf" onclick="pick(this,'robe')" data-house="Gryffindor">Scarlet &amp; Gold (Gryffindor)</div>
+            <div class="choice-chip robe-slyt" onclick="pick(this,'robe')" data-house="Slytherin">Emerald &amp; Silver (Slytherin)</div>
+            <div class="choice-chip robe-rave" onclick="pick(this,'robe')" data-house="Ravenclaw">Navy &amp; Bronze (Ravenclaw)</div>
+            <div class="choice-chip robe-huff" onclick="pick(this,'robe')" data-house="Hufflepuff">Yellow &amp; Black (Hufflepuff)</div>
+            <div class="choice-chip" onclick="pick(this,'robe')" data-house="">Classic Black</div>
+          </div>
+        </div>
+
+        <div class="choice-section">
+          <div class="choice-label">Magical Specialty</div>
+          <div class="choice-grid" data-group="specialty">
+            <div class="choice-chip" onclick="pick(this,'specialty')">Transfiguration</div>
+            <div class="choice-chip" onclick="pick(this,'specialty')">Potions</div>
+            <div class="choice-chip" onclick="pick(this,'specialty')">Defense Against the Dark Arts</div>
+            <div class="choice-chip" onclick="pick(this,'specialty')">Herbology</div>
+            <div class="choice-chip" onclick="pick(this,'specialty')">Divination</div>
+            <div class="choice-chip" onclick="pick(this,'specialty')">Charms</div>
+            <div class="choice-chip" onclick="pick(this,'specialty')">Astronomy</div>
+          </div>
+        </div>
+
+        <div class="choice-section">
+          <div class="choice-label">Familiar (Pet)</div>
+          <div class="choice-grid" data-group="pet">
+            <div class="choice-chip" onclick="pick(this,'pet')">Black Cat</div>
+            <div class="choice-chip" onclick="pick(this,'pet')">Toad</div>
+            <div class="choice-chip" onclick="pick(this,'pet')">Ferret</div>
+            <div class="choice-chip" onclick="pick(this,'pet')">Rat</div>
+            <div class="choice-chip" onclick="pick(this,'pet')">No pet</div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem;text-align:center;">
+          <button class="flip-btn no-print" style="padding:12px 36px;font-size:14px;letter-spacing:1.5px;" onclick="buildProfile()">Reveal My Wizard Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINAL PROFILE -->
+    <div id="final-section">
+      <p class="final-title">✦ &nbsp; Your Wizard Profile &nbsp; ✦</p>
+      <div class="profile-card">
+        <div class="profile-name-area">
+          <div class="profile-wizard-name" id="fp-name">—</div>
+          <div class="profile-meta" id="fp-meta"></div>
+        </div>
+        <div class="profile-layout">
+          <div>
+            <div class="profile-grid">
+              <div><div class="profile-item-label">Wizard Status</div><div class="profile-item-val" id="fp-status">—</div></div>
+              <div><div class="profile-item-label">Wizarding House</div><div class="profile-item-val"><span class="house-badge-inline" id="fp-house">—</span></div></div>
+              <div><div class="profile-item-label">Mail Animal</div><div class="profile-item-val" id="fp-animal">—</div></div>
+              <div><div class="profile-item-label">Children's Wizard Odds</div><div class="profile-item-val" id="fp-odds">—</div></div>
+              <div><div class="profile-item-label">Magical Specialty</div><div class="profile-item-val" id="fp-specialty">—</div></div>
+              <div><div class="profile-item-label">Familiar</div><div class="profile-item-val" id="fp-pet">—</div></div>
+            </div>
+            <div class="wand-line">
+              <div class="profile-item-label">Your Wand</div>
+              <div class="profile-item-val" id="fp-wand">—</div>
+            </div>
+          </div>
+          <div>
+            <div class="punnett-label" style="margin-bottom:6px;text-align:center;">Your Wizard</div>
+            <div class="wizard-portrait-box" id="portrait-box">
+              <div class="portrait-placeholder">Your wizard portrait will appear here after you reveal your profile.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screenshot-note">
+        <p>
+          <strong>Take a screenshot of your profile to submit!</strong><br>
+          Chromebook: <strong>Ctrl + Show Windows</strong> (or Ctrl + F5)<br>
+          Windows PC: <strong>Windows key + Shift + S</strong><br>
+          Mac: <strong>Command + Shift + 4</strong><br>
+          iPhone/iPad: <strong>Side button + Volume Up</strong> at the same time
+        </p>
+      </div>
+      <button class="print-btn no-print" onclick="window.print()">Print My Profile</button>
+      <button class="reset-btn no-print" onclick="resetAll()">Start Over</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SD={}, CH={};
+
+/* ── ALLELE HELPERS ── */
+function rnd(){return Math.random()<0.5?'H':'T';}
+function toA(f,U){return f==='H'?U:U.toLowerCase();}
+function makeG(f1,f2,U){const a=toA(f1,U),b=toA(f2,U);return a===U?a+b:b===U?b+a:a+b;}
+function sortG(x,y){if(x===x.toUpperCase()&&y!==y.toUpperCase())return x+y;if(y===y.toUpperCase()&&x!==x.toUpperCase())return y+x;return x+y;}
+// g1 = TOP (columns), g2 = SIDE (rows). Each cell = row allele + col allele, then sorted dom first.
+function crossG(g1,g2){
+  const[c1,c2]=g1.split(''); // top alleles (columns)
+  const[r1,r2]=g2.split(''); // side alleles (rows)
+  return[
+    sortG(r1,c1), sortG(r1,c2),
+    sortG(r2,c1), sortG(r2,c2)
+  ];
+}
+
+/* styled allele HTML — dominant bold blue, recessive italic red */
+function alleleHtml(letter){
+  return letter===letter.toUpperCase()
+    ?`<span class="A-dom">${letter}</span>`
+    :`<span class="A-rec">${letter}</span>`;
+}
+function genoHtml(g){return alleleHtml(g[0])+alleleHtml(g[1]);}
+
+/* set coin element */
+function setCoinEl(id,f,U){
+  const el=document.getElementById(id);if(!el)return;
+  const letter=toA(f,U);
+  el.innerHTML=alleleHtml(letter);
+  el.className='coin '+(f==='H'?'heads':'tails');
+}
+
+/* ── FLIP FUNCTIONS ── */
+function flipSection(sec,U,myIds,partIds){
+  const flips=[rnd(),rnd(),rnd(),rnd()];
+  myIds.forEach((id,i)=>setCoinEl(id,flips[i],U));
+  partIds.forEach((id,i)=>setCoinEl(id,flips[i+2],U));
+  setupGrid(sec,makeG(flips[0],flips[1],U),makeG(flips[2],flips[3],U),U);
+}
+
+function flipS2(){
+  const U='W';
+  const myG=SD['s1']?SD['s1'].g1:'Ww';
+  const[a,b]=myG.split('');
+  const el1=document.getElementById('s2y1'),el2=document.getElementById('s2y2');
+  el1.innerHTML=alleleHtml(a); el1.className='coin '+(a===U?'heads':'tails');
+  el2.innerHTML=alleleHtml(b); el2.className='coin '+(b===U?'heads':'tails');
+  const f3=rnd(),f4=rnd();
+  setCoinEl('s2p1',f3,U); setCoinEl('s2p2',f4,U);
+  setupGrid('s2',myG,makeG(f3,f4,U),U);
+}
+
+/* ── SETUP GRID ── */
+function setupGrid(sec,g1,g2,U){
+  // g1 = top parent (columns), g2 = side parent (rows)
+  const[a,b]=g1.split(''); // top alleles → ph1, ph2
+  const[c,d]=g2.split(''); // side alleles → ps1, ps2
+  document.getElementById(sec+'ph1').innerHTML=alleleHtml(a);
+  document.getElementById(sec+'ph2').innerHTML=alleleHtml(b);
+  document.getElementById(sec+'ps1').innerHTML=alleleHtml(c);
+  document.getElementById(sec+'ps2').innerHTML=alleleHtml(d);
+  // answers: cell0=row1+col1, cell1=row1+col2, cell2=row2+col1, cell3=row2+col2
+  const answers=crossG(g1,g2);
+  const L=U.toLowerCase();
+  SD[sec]={g1,g2,U,answers,state:[null,null,null,null]};
+
+  for(let i=0;i<4;i++){
+    const cell=document.getElementById(sec+'c'+i);
+    cell.innerHTML='?'; cell.className='p-cell';
+  }
+
+  const opts=[U+U,U+L,L+L];
+  const labels=['Cell 1','Cell 2','Cell 3','Cell 4'];
+  const choicesEl=document.getElementById(sec+'-choices');
+  choicesEl.innerHTML='';
+  for(let i=0;i<4;i++){
+    const row=document.createElement('div'); row.className='cell-row';
+    const lbl=document.createElement('span'); lbl.className='cell-row-label'; lbl.textContent=labels[i];
+    row.appendChild(lbl);
+    const btns=document.createElement('div'); btns.className='cell-choices'; btns.id=sec+'-btnrow-'+i;
+    opts.forEach(opt=>{
+      const btn=document.createElement('button');
+      btn.className='cell-opt';
+      btn.innerHTML=genoHtml(opt);
+      btn.onclick=()=>chooseCell(sec,i,opt);
+      btns.appendChild(btn);
+    });
+    row.appendChild(btns);
+    choicesEl.appendChild(row);
+  }
+  document.getElementById(sec+'-fb').innerHTML='';
+  document.getElementById(sec+'-result').style.display='none';
+  document.getElementById(sec+'-punnett').style.display='block';
+}
+
+/* ── CHOOSE CELL ── */
+function chooseCell(sec,idx,val){
+  const d=SD[sec]; if(!d||d.state[idx]==='ok')return;
+  const correct=d.answers[idx];
+  const cell=document.getElementById(sec+'c'+idx);
+  const btnRow=document.getElementById(sec+'-btnrow-'+idx);
+  cell.innerHTML=genoHtml(val);
+  if(val===correct){
+    cell.className='p-cell correct';
+    d.state[idx]='ok';
+    if(btnRow){
+      Array.from(btnRow.children).forEach(b=>{
+        b.disabled=true;
+        if(b.textContent.replace(/\s/g,'')===val||b.innerHTML.includes(val[0])&&b.innerHTML.includes(val[1])){
+          b.className='cell-opt right-done';
+        } else { b.className='cell-opt'; }
+      });
+    }
+  } else {
+    cell.className='p-cell wrong';
+    setTimeout(()=>{if(d.state[idx]!=='ok')cell.className='p-cell';},400);
+    if(btnRow){
+      const wrongBtn=Array.from(btnRow.children).find(b=>{
+        return b.textContent.replace(/\s/g,'')===val||
+          (b.innerHTML.includes(val[0])&&b.innerHTML.includes(val[1]));
+      });
+      if(wrongBtn){wrongBtn.className='cell-opt wrong-flash';setTimeout(()=>{wrongBtn.className='cell-opt';},700);}
+    }
+  }
+  const fb=document.getElementById(sec+'-fb');
+  if(d.state.every(s=>s==='ok')){
+    fb.innerHTML='<p class="feedback-msg ok">All correct! Great work!</p>';
+    revealResult(sec);
+  } else if(val!==correct){
+    fb.innerHTML='<p class="feedback-msg err">Not quite — try a different option for that cell!</p>';
+  }
+}
+
+/* ── REVEAL RESULT ── */
+function revealResult(sec){
+  const d=SD[sec];
+  const res=document.getElementById(sec+'-result');
+  res.style.display='block';
+  const U=d.U,L=U.toLowerCase(),ans=d.answers;
+  const uu=ans.filter(a=>a===U+U).length;
+  const ul=ans.filter(a=>a===U+L||a===L+U).length;
+  const ll=ans.filter(a=>a===L+L).length;
+  const probs=`<div class="prob-row"><span class="prob-chip">${U+U}: ${uu}/4</span><span class="prob-chip">${U+L}: ${ul}/4</span><span class="prob-chip">${L+L}: ${ll}/4</span></div>`;
+  const myCell=ans[Math.floor(Math.random()*4)];
+
+  if(sec==='s1'){
+    SD.myGeno=myCell; SD['s1'].g1=d.g1;
+    SD.wizStatus=myCell!==L+L?'Wizard':'Muggle';
+    res.innerHTML=probs+`<div class="result-badge ${SD.wizStatus==='Wizard'?'badge-wizard':'badge-muggle'}" style="margin-top:0.75rem;">You are a ${SD.wizStatus}! &nbsp; Genotype: ${myCell}</div><p class="unlock-hint">Part 2 is now unlocked!</p>`;
+    document.getElementById('s2').classList.remove('locked');
+  } else if(sec==='s2'){
+    const wizPct=Math.round((4-ll)/4*100);
+    SD.childOdds=wizPct+'%';
+    res.innerHTML=probs+`<div class="result-badge badge-gold" style="margin-top:0.75rem;">${wizPct}% chance your children are wizards</div><p class="unlock-hint">Part 3 is now unlocked!</p>`;
+    document.getElementById('s3').classList.remove('locked');
+  } else if(sec==='s3'){
+    const houseOf=g=>{
+      if(g===U+U)return{n:'Gryffindor',cls:'badge-gryffindor',bg:'#FFF4E6',tc:'#740001'};
+      if(g===L+L)return{n:'Slytherin',cls:'badge-slytherin',bg:'#E8F5E9',tc:'#1A472A'};
+      return Math.random()<0.5?{n:'Ravenclaw',cls:'badge-ravenclaw',bg:'#E8EAF6',tc:'#0E1A40'}:{n:'Hufflepuff',cls:'badge-hufflepuff',bg:'#FFFDE7',tc:'#5a4000'};
+    };
+    const houses=ans.map(houseOf);
+    const counts={};houses.forEach(h=>counts[h.n]=(counts[h.n]||0)+1);
+    const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    SD.house=top[0];
+    const chips=houses.map(h=>`<span style="display:inline-block;padding:3px 10px;border-radius:12px;background:${h.bg};color:${h.tc};border:1px solid ${h.tc}50;font-size:12px;margin:2px;">${h.n}</span>`).join('');
+    const topH=houses.find(h=>h.n===top[0]);
+    res.innerHTML=`<div style="margin:4px 0 8px;">${chips}</div><div class="result-badge ${topH.cls}">Most likely: ${top[0]} (${top[1]}/4)</div><p class="unlock-hint">Part 4 is now unlocked!</p>`;
+    document.getElementById('s4').classList.remove('locked');
+    suggestRobe(top[0]);
+  } else if(sec==='s4'){
+    SD.animal=myCell===L+L?'Gray Owl':'White Owl';
+    res.innerHTML=probs+`<div class="result-badge badge-neutral" style="margin-top:0.75rem;">Your mail animal: ${SD.animal}</div><p class="unlock-hint">Part 5 is now unlocked!</p>`;
+    document.getElementById('s5').classList.remove('locked');
+  } else if(sec==='s5'){
+    SD.wood=myCell===U+U?'Ash Wood':myCell===L+L?'Cypress Wood':'Elm Wood';
+    res.innerHTML=probs+`<div class="result-badge badge-neutral" style="margin-top:0.75rem;">Your wand wood: ${SD.wood}</div><p class="unlock-hint">Part 6 is now unlocked!</p>`;
+    document.getElementById('s6').classList.remove('locked');
+  } else if(sec==='s6'){
+    SD.core=myCell===U+U?'Unicorn Tail':myCell===L+L?'Phoenix Feather':'Dragon Heartstring';
+    res.innerHTML=probs+`<div class="result-badge badge-neutral" style="margin-top:0.75rem;">Your wand core: ${SD.core}</div><p class="unlock-hint">Almost done — build your wizard below!</p>`;
+    document.getElementById('s7').classList.remove('locked');
+  }
+}
+
+/* auto-highlight the robe matching the house result */
+function suggestRobe(house){
+  const houseMap={Gryffindor:'Gryffindor',Slytherin:'Slytherin',Ravenclaw:'Ravenclaw',Hufflepuff:'Hufflepuff'};
+  document.querySelectorAll('[data-group="robe"] .choice-chip').forEach(chip=>{
+    if(chip.dataset.house===house){
+      chip.classList.add('selected');
+      CH['robe']=chip.textContent.trim();
+    }
+  });
+}
+
+/* ── WIZARD BUILDER ── */
+function pick(el,group){
+  document.querySelectorAll(`[data-group="${group}"] .choice-chip`).forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  CH[group]=el.textContent.trim();
+}
+
+/* ── BUILD PROFILE + GENERATE PORTRAIT ── */
+async function buildProfile(){
+  const name=(document.getElementById('wizard-name-input').value.trim()||document.getElementById('student-name').value.trim()||'Unnamed Wizard');
+  const gender=CH.gender||'wizard';
+  const title=gender==='Male'?'Wizard ':gender==='Female'?'Witch ':'';
+  document.getElementById('fp-name').textContent=title+name;
+  const period=document.getElementById('student-period').value;
+  const date=document.getElementById('student-date').value;
+  document.getElementById('fp-meta').textContent=[period&&'Period '+period,date].filter(Boolean).join(' · ');
+  document.getElementById('fp-status').textContent=SD.wizStatus||'—';
+
+  const houseColors={Gryffindor:{bg:'#FFF4E6',tc:'#740001'},Slytherin:{bg:'#E8F5E9',tc:'#1A472A'},Ravenclaw:{bg:'#E8EAF6',tc:'#0E1A40'},Hufflepuff:{bg:'#FFFDE7',tc:'#5a4000'}};
+  const hc=houseColors[SD.house]||{bg:'#FDF6E3',tc:'#8B6914'};
+  const hEl=document.getElementById('fp-house');
+  hEl.textContent=SD.house||'—';
+  hEl.style.background=hc.bg; hEl.style.color=hc.tc; hEl.style.border='1px solid '+hc.tc+'60';
+
+  document.getElementById('fp-animal').textContent=SD.animal||'—';
+  document.getElementById('fp-odds').textContent=SD.childOdds||'—';
+  document.getElementById('fp-wand').textContent=(SD.wood&&SD.core)?SD.wood+' · '+SD.core:'—';
+  document.getElementById('fp-specialty').textContent=CH.specialty||'—';
+  document.getElementById('fp-pet').textContent=CH.pet||'—';
+
+  const fs=document.getElementById('final-section');
+  fs.style.display='block';
+  setTimeout(()=>fs.scrollIntoView({behavior:'smooth',block:'start'}),120);
+
+  // Generate wizard portrait
+  await generatePortrait(gender, CH.robe||'Classic Black', SD.house||'Hogwarts', CH.specialty||'magic', CH.pet||'no pet', SD.animal||'owl');
+}
+
+async function generatePortrait(gender,robe,house,specialty,pet,mailAnimal){
+  const box=document.getElementById('portrait-box');
+  box.innerHTML=`<div class="portrait-loading"><div class="spinner"></div><p>Summoning your wizard...</p></div>`;
+
+  const genderDesc=gender==='Male'?'young male':'gender==="Female"'?'young female':'young';
+  const actualGender=gender==='Male'?'young male student':'gender==="Female"'?'young female student':'young student';
+  const prompt=`A charming illustrated portrait of a ${actualGender} wizard at Hogwarts School of Witchcraft and Wizardry. The wizard is wearing ${robe} robes representing ${house} house. They are holding a magic wand and have a ${mailAnimal} perched nearby${pet!=='No pet'?`, and a ${pet} as a familiar`:''}. Their magical specialty is ${specialty}. The style is a warm, friendly, colorful storybook illustration — like official Harry Potter illustrated editions. The wizard looks confident and magical. Portrait orientation, upper body visible, detailed magical atmosphere with floating sparkles. No text in the image.`;
+
+  try{
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'text',text:`Please generate a detailed image description for this wizard portrait that I will use as an SVG illustration. Describe exactly: the wizard's appearance, clothing colors, expression, pose, and magical details. Keep it to 3-4 sentences. Wizard details: ${prompt}`}
+        ]}]
+      })
+    });
+    const data=await response.json();
+    const description=data.content?.[0]?.text||'';
+
+    // Build SVG wizard based on description and choices
+    const svg=buildWizardSVG(gender, robe, house, specialty, mailAnimal);
+    box.innerHTML=svg;
+  } catch(err){
+    console.error(err);
+    const svg=buildWizardSVG(gender, robe, house, specialty, mailAnimal);
+    box.innerHTML=svg;
+  }
+}
+
+function buildWizardSVG(gender,robe,house,specialty,mailAnimal){
+  const robeColors={
+    'Scarlet & Gold (Gryffindor)':{main:'#8B0000',accent:'#C9A84C',trim:'#FFD700'},
+    'Emerald & Silver (Slytherin)':{main:'#1A472A',accent:'#7F7F7F',trim:'#C0C0C0'},
+    'Navy & Bronze (Ravenclaw)':{main:'#0E1A40',accent:'#7B4E1E',trim:'#CD7F32'},
+    'Yellow & Black (Hufflepuff)':{main:'#ECB939',accent:'#000000',trim:'#F0C040'},
+    'Classic Black':{main:'#1a1a1a',accent:'#444',trim:'#666'}
+  };
+  const rc=robeColors[robe]||robeColors['Classic Black'];
+
+  const skinTones=['#F5C5A3','#E8A87C','#C68642','#8D5524','#FDBCB4'];
+  const skin=skinTones[Math.floor(Math.random()*skinTones.length)];
+  const hairColors=['#2C1810','#8B4513','#DAA520','#000000','#800020','#708090'];
+  const hair=hairColors[Math.floor(Math.random()*hairColors.length)];
+  const isFemale=gender==='Female';
+
+  const starSparkles=Array.from({length:8},(_,i)=>{
+    const x=20+Math.random()*160, y=10+Math.random()*80;
+    const sz=2+Math.random()*3;
+    return `<circle cx="${x}" cy="${y}" r="${sz}" fill="${rc.accent}" opacity="${0.4+Math.random()*0.5}"/>`;
+  }).join('');
+
+  const owlSVG=mailAnimal==='White Owl'
+    ?`<g transform="translate(155,80)"><ellipse cx="0" cy="0" rx="14" ry="16" fill="#EEE"/><circle cx="-4" cy="-4" r="4" fill="#FFD700"/><circle cx="4" cy="-4" r="4" fill="#FFD700"/><circle cx="-4" cy="-4" r="2" fill="#000"/><circle cx="4" cy="-4" r="2" fill="#000"/><path d="M-2,1 L2,1 L0,4 Z" fill="#E8A020"/><path d="M-14,4 Q-8,12 0,8 Q8,12 14,4 L10,18 Q0,22 -10,18 Z" fill="#DDD"/></g>`
+    :`<g transform="translate(155,80)"><ellipse cx="0" cy="0" rx="14" ry="16" fill="#888"/><circle cx="-4" cy="-4" r="4" fill="#FFD700"/><circle cx="4" cy="-4" r="4" fill="#FFD700"/><circle cx="-4" cy="-4" r="2" fill="#000"/><circle cx="4" cy="-4" r="2" fill="#000"/><path d="M-2,1 L2,1 L0,4 Z" fill="#E8A020"/><path d="M-14,4 Q-8,12 0,8 Q8,12 14,4 L10,18 Q0,22 -10,18 Z" fill="#777"/></g>`;
+
+  return `<svg viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:4px;background:linear-gradient(160deg,#1a0a04,#2C1810,#0d1a0a)">
+  <defs><radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${rc.accent}" stop-opacity="0.3"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
+  <rect width="200" height="260" fill="url(#glow)"/>
+  ${starSparkles}
+  <!-- robe/body -->
+  <path d="M60,160 Q50,200 40,260 L160,260 Q150,200 140,160 Q130,145 100,142 Q70,145 60,160Z" fill="${rc.main}"/>
+  <path d="M60,160 Q55,180 52,220 L80,220 Q78,185 80,165 Z" fill="${rc.accent}" opacity="0.5"/>
+  <path d="M140,160 Q145,180 148,220 L120,220 Q122,185 120,165 Z" fill="${rc.accent}" opacity="0.5"/>
+  <!-- robe collar/trim -->
+  <path d="M85,155 Q100,168 115,155 L110,145 Q100,152 90,145 Z" fill="${rc.trim}"/>
+  <!-- neck -->
+  <rect x="92" y="128" width="16" height="22" rx="6" fill="${skin}"/>
+  <!-- head -->
+  <ellipse cx="100" cy="115" rx="28" ry="${isFemale?31:28}" fill="${skin}"/>
+  <!-- hair -->
+  ${isFemale
+    ?`<path d="M72,110 Q74,80 100,82 Q126,80 128,110 Q126,95 100,90 Q74,95 72,110Z" fill="${hair}"/>
+       <path d="M72,110 Q68,125 70,145 Q80,150 82,140 Q76,130 78,115Z" fill="${hair}"/>
+       <path d="M128,110 Q132,125 130,145 Q120,150 118,140 Q124,130 122,115Z" fill="${hair}"/>`
+    :`<path d="M72,108 Q75,82 100,84 Q125,82 128,108 Q124,90 100,88 Q76,90 72,108Z" fill="${hair}"/>`
+  }
+  <!-- eyes -->
+  <ellipse cx="90" cy="112" rx="5" ry="5.5" fill="white"/>
+  <ellipse cx="110" cy="112" rx="5" ry="5.5" fill="white"/>
+  <ellipse cx="90" cy="113" rx="3" ry="3.5" fill="#3a2810"/>
+  <ellipse cx="110" cy="113" rx="3" ry="3.5" fill="#3a2810"/>
+  <circle cx="91" cy="112" r="1" fill="white"/>
+  <circle cx="111" cy="112" r="1" fill="white"/>
+  <!-- eyebrows -->
+  <path d="M84,106 Q90,103 96,105" stroke="${hair}" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M104,105 Q110,103 116,106" stroke="${hair}" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- nose -->
+  <ellipse cx="100" cy="120" rx="3" ry="2" fill="${skin}" stroke="#d4a888" stroke-width="0.8"/>
+  <!-- mouth -->
+  <path d="M93,128 Q100,133 107,128" stroke="#c0806a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <!-- hat -->
+  <path d="M72,100 L100,28 L128,100 Z" fill="${rc.main}"/>
+  <rect x="64" y="98" width="72" height="8" rx="3" fill="${rc.main}" stroke="${rc.trim}" stroke-width="1.5"/>
+  <path d="M84,95 Q100,75 116,95" fill="${rc.accent}" opacity="0.6"/>
+  <!-- wand arm -->
+  <path d="M135,155 Q148,140 158,120" stroke="${skin}" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <!-- wand -->
+  <line x1="156" y1="122" x2="172" y2="100" stroke="#6B3A1F" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- magic sparkle at wand tip -->
+  <circle cx="172" cy="100" r="5" fill="${rc.accent}" opacity="0.9"/>
+  <circle cx="172" cy="100" r="8" fill="${rc.accent}" opacity="0.3"/>
+  <line x1="165" y1="93" x2="179" y2="107" stroke="${rc.trim}" stroke-width="1" opacity="0.8"/>
+  <line x1="165" y1="107" x2="179" y2="93" stroke="${rc.trim}" stroke-width="1" opacity="0.8"/>
+  <!-- owl -->
+  ${owlSVG}
+  <!-- house crest badge -->
+  <rect x="88" y="172" width="24" height="20" rx="3" fill="${rc.accent}" opacity="0.9"/>
+  <text x="100" y="186" font-family="serif" font-size="8" fill="${rc.main}" text-anchor="middle" font-weight="bold">${(house||'HP')[0]}</text>
+</svg>`;
+}
+
+function pick(el,group){
+  document.querySelectorAll(`[data-group="${group}"] .choice-chip`).forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  CH[group]=el.textContent.trim();
+}
+
+function resetAll(){
+  document.querySelectorAll('.coin').forEach(c=>{c.innerHTML='?';c.className='coin';});
+  ['s1','s2','s3','s4','s5','s6'].forEach(sec=>{
+    document.getElementById(sec+'-punnett').style.display='none';
+    const ch=document.getElementById(sec+'-choices');if(ch)ch.innerHTML='';
+    document.getElementById(sec+'-fb').innerHTML='';
+    document.getElementById(sec+'-result').style.display='none';
+    for(let i=0;i<4;i++){const c=document.getElementById(sec+'c'+i);if(c){c.innerHTML='?';c.className='p-cell';}}
+  });
+  ['s2','s3','s4','s5','s6','s7'].forEach(id=>document.getElementById(id).classList.add('locked'));
+  document.getElementById('final-section').style.display='none';
+  document.getElementById('portrait-box').innerHTML='<div class="portrait-placeholder">Your wizard portrait will appear here after you reveal your profile.</div>';
+  document.querySelectorAll('.choice-chip.selected').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('wizard-name-input').value='';
+  Object.keys(SD).forEach(k=>delete SD[k]);
+  Object.keys(CH).forEach(k=>delete CH[k]);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
